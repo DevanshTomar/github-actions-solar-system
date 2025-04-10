@@ -6,7 +6,12 @@ on:
     branches:
       - main
       - 'feature/*'
-    
+
+env:
+  MONGO_URI : mongodb+srv://supercluster.d83jj.mongodb.net/superData
+  MONGO_USERNAME: superuser
+  MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+
 jobs:
     unit-testing:
         name: Unit Testing
@@ -19,15 +24,46 @@ jobs:
           uses: actions/setup-node@v4
           with:
             node-version: 20
-    
+
+        - c
         - name: Install Dependencies
-          run: npm install
+          run: |
+            npm install 
+            echo "helo"
     
         - name: Unit Testing
           run: npm test
           
         - name: Archive Test Result
+          if: always()
           uses: actions/upload-artifact@v4
           with:
             name: Mocha-Test-Result
             path: test-results.xml
+        
+    code-coverage:
+        runs-on: ubuntu-latest
+        steps:
+          - name: chekout repo
+            uses: actions/checkout@v4
+          
+          - name: setup node.js
+            id: setup
+            uses: actions/setup-node@v4
+            with:
+              node-version: 18
+
+          - name: install dependencies
+            run: npm install
+          
+          - name: run code-coverage
+            run : npm run code-coverage
+            continue-on-error: true
+          
+          - name: upload code coverage report
+            uses: actions/upload-artifact@v4
+            with:
+              name: code-Coverage-Result
+              path: coverage
+              retention-days: 5
+          
